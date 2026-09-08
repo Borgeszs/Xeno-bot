@@ -2,20 +2,18 @@ const usuarios = new Map();
 
 const NIVEIS = [
   { nivel: 0,  xp: 0 },
-  { nivel: 1,  xp: 1000 },
-  { nivel: 2,  xp: 1300 },
-  { nivel: 3,  xp: 1500 },
-  { nivel: 4,  xp: 1700 },
-  { nivel: 5,  xp: 1750 },
-  { nivel: 6,  xp: 1850 },
-  { nivel: 7,  xp: 1930 },
-  { nivel: 8,  xp: 1985 },
-  { nivel: 9,  xp: 2100 },
-  { nivel: 10, xp: 2300 },
-  { nivel: 11, xp: 2500 },
-  { nivel: 12, xp: 2750 },
-  { nivel: 13, xp: 2950 },
-  { nivel: 14, xp: 5000 },
+  { nivel: 1,  xp: 100 },
+  { nivel: 2,  xp: 200 },
+  { nivel: 3,  xp: 350 },
+  { nivel: 4,  xp: 400 },
+  { nivel: 5,  xp: 450 },
+  { nivel: 6,  xp: 500 },
+  { nivel: 7,  xp: 550 },
+  { nivel: 8,  xp: 620 },
+  { nivel: 9,  xp: 670 },
+  { nivel: 10, xp: 700 },
+  { nivel: 11, xp: 720 },
+  { nivel: 12, xp: 800 },
 ];
 
 function calcularNivel(xp) {
