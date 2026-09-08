@@ -1,10 +1,6 @@
 const { REST, Routes, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const { getMemeAleatorio } = require('../utils/memes');
-
-const CANAL_MEME_ID = '1491100233696809152';
-const INTERVALO_MS = 30 * 60 * 1000;
 
 module.exports = {
   name: 'ready',
