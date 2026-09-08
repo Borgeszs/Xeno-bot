@@ -1,57 +1,80 @@
-const { REST, Routes, EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-const { getMemeAleatorio } = require('../utils/memes');
-
-const CANAL_MEME_ID = '1491100233696809152';
-const INTERVALO_MS = 30 * 60 * 1000;
+const { REST, Routes } = require('discord.js');
 
 module.exports = {
   name: 'ready',
   once: true,
+
   async execute(client) {
     console.log(`✅ Xeno Bot online como ${client.user.tag}`);
+    console.log(`🌐 Conectado a ${client.guilds.cache.size} servidor(es).`);
 
-    // Registra slash commands
-    const commands = [];
-    const commandsPath = path.join(__dirname, '../commands');
-    for (const file of fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'))) {
-      const cmd = require(path.join(commandsPath, file));
-      commands.push(cmd.data.toJSON());
-    }
+    try {
+      const fs = require('fs');
+      const path = require('path');
 
-    const rest = new REST().setToken(process.env.TOKEN);
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      { body: commands }
-    );
-    console.log(`📋 ${commands.length} comandos registrados.`);
+      const commands = [];
+      const commandsPath = path.join(__dirname, '../commands');
 
-    // ── Meme scheduler ────────────────────────────────────────────────────
-    async function enviarMeme() {
-      try {
-        const canal = await client.channels.fetch(CANAL_MEME_ID);
-        if (!canal) return;
-
-        const meme = getMemeAleatorio();
-
-        if (meme.type === 'gif') {
-          const embed = new EmbedBuilder()
-            .setColor(0xF5A623)
-            .setImage(meme.url);
-          if (meme.legenda) embed.setDescription(meme.legenda);
-          await canal.send({ embeds: [embed] });
-        } else {
-          await canal.send(meme.conteudo);
-        }
-
-        console.log('[Meme] Enviado às', new Date().toLocaleTimeString('pt-BR'));
-      } catch (err) {
-        console.error('[Meme] Erro:', err.message);
+      if (!fs.existsSync(commandsPath)) {
+        console.error(`❌ Pasta de comandos não encontrada: ${commandsPath}`);
+        return;
       }
-    }
 
-    await enviarMeme();
-    setInterval(enviarMeme, INTERVALO_MS);
-  },
+      const files = fs
+        .readdirSync(commandsPath)
+        .filter(file => file.endsWith('.js'));
+
+      for (const file of files) {
+        try {
+          const commandPath = path.join(commandsPath, file);
+          const command = require(commandPath);
+
+          if (!command.data || !command.execute) {
+            console.warn(`⚠️ Comando ignorado: ${file}`);
+            continue;
+          }
+
+          commands.push(command.data.toJSON());
+
+          console.log(`📦 Comando carregado: ${command.data.name}`);
+        } catch (error) {
+          console.error(`❌ Erro ao carregar ${file}:`, error);
+        }
+      }
+
+      if (!process.env.TOKEN) {
+        console.error('❌ TOKEN não configurado.');
+        return;
+      }
+
+      if (!process.env.CLIENT_ID) {
+        console.error('❌ CLIENT_ID não configurado.');
+        return;
+      }
+
+      if (!process.env.GUILD_ID) {
+        console.error('❌ GUILD_ID não configurado.');
+        return;
+      }
+
+      const rest = new REST({ version: '10' })
+        .setToken(process.env.TOKEN);
+
+      await rest.put(
+        Routes.applicationGuildCommands(
+          process.env.CLIENT_ID,
+          process.env.GUILD_ID
+        ),
+        {
+          body: commands
+        }
+      );
+
+      console.log(`📋 ${commands.length} comando(s) registrado(s) com sucesso.`);
+      console.log('🚀 Bot pronto para receber comandos!');
+    } catch (error) {
+      console.error('❌ Erro durante a inicialização:');
+      console.error(error);
+    }
+  }
 };
